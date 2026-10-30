@@ -194,3 +194,7 @@ uopen.pas          open a URL/file in the default app
 uui.pas            terminal browser (video/keyboard/mouse)
 test/              unit tests (make test)
 ```
+
+## License
+
+MIT — see [LICENSE](LICENSE).
