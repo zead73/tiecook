@@ -21,5 +21,8 @@ samples/
 # local export preview (not committed)
 preview/
 
+# local landing page, not part of the project
+site/
+
 # test build artifacts
 test/.build/
