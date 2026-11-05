@@ -62,7 +62,7 @@ end;
 function MadeByFooter: string;
 begin
   Result := '<footer style="text-align:center;margin-top:40px;font-size:0.8em;color:#777;">'
-          + 'Website made by <a href="https://github.com/zead73/tiecook"'
+          + 'Website made by <a href="https://tiestudio.ca/tiecook/"'
           + ' target="_blank" rel="noopener">tiecook</a></footer>';
 end;
 
