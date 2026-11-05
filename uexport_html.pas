@@ -278,7 +278,12 @@ begin
 
     if R.SourceUrl <> '' then
       sb.Add('<p class="source">Source: <a href="' + EscapeHtml(R.SourceUrl) +
-             '">' + EscapeHtml(R.SourceUrl) + '</a></p>');
+             '">' + EscapeHtml(R.SourceUrl) + '</a></p>')
+    else if (Trim(R.Source) <> '')
+         and (LowerCase(Trim(R.Source)) <> 'tandoor')
+         and (LowerCase(Trim(R.Source)) <> 'mealmaster') then
+      { a person/place credit; the importer tags are not shown }
+      sb.Add('<p class="source">Source: ' + EscapeHtml(Trim(R.Source)) + '</p>');
 
     sb.Add('<div class="print-nav"><button onclick="window.print()">PRINT THIS RECIPE</button></div>');
     sb.Add('<p class="backlink"><a href="index.html">&larr; Main Page</a></p>');

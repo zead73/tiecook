@@ -82,7 +82,7 @@ begin
     { a recipe with an explicit photo }
     R := Default(TRecipe); InitRecipe(R);
     R.Title := 'Squash Soup';
-    R.Source := 'mealmaster'; R.SourceId := 's.mmf';
+    R.Source := 'Glen & friends'; R.SourceId := 's.mmf';
     R.Image := 'squash-soup.jpg';
     AddIngredient(R, '1 squash');
     AddStep(R, 'Roast, blend.');
@@ -173,6 +173,9 @@ begin
           'recipe-page footer links to the project repo');
     Check(Pos('<li>1 cup flour</li>', page) > 0, 'ingredient list item rendered');
     Check(Pos('PRINT THIS RECIPE', page) > 0, 'print button present');
+    Check(Pos('Source: Glen &amp; friends', ReadFile(IncludeTrailingPathDelimiter(outdir) + 'squash-soup.htm')) > 0,
+          'a person/place source is shown, escaped');
+    Check(Pos('Source:', page) = 0, 'importer tag (mealmaster) is not shown as a source');
     Check(Pos('images/squash-soup.jpg', ReadFile(IncludeTrailingPathDelimiter(outdir) + 'squash-soup.htm')) > 0,
           'explicit photo referenced on its recipe page');
     Check(Pos('images/drop-scone.jpg', ReadFile(IncludeTrailingPathDelimiter(outdir) + 'drop-scone.htm')) > 0,
