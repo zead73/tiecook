@@ -85,7 +85,7 @@ type
     procedure ShowTitle;
     function ConfirmYN(const Msg: string): Boolean;
     function PromptText(const Prompt: string; out Value: string;
-      const Initial: string = ''): Boolean;
+      const Initial: string = ''; AllowEmpty: Boolean = False): Boolean;
     procedure Flash(const Msg: string);
     procedure TeardownIO;
     procedure InitIO;
@@ -898,7 +898,7 @@ procedure TBrowser.SetEditImage;
 var
   p, ext, destName: string;
 begin
-  if not PromptText('Image file path (blank to remove): ', p, '') then Exit;  { cancelled }
+  if not PromptText('Image file path (blank to remove): ', p, '', True) then Exit;  { cancelled }
   p := Trim(p);
   if p = '' then
   begin
@@ -928,7 +928,7 @@ var
   R: TRecipe;
   p, ext, libd, destName, oldImg: string;
 begin
-  if not PromptText('Image file path (blank to remove): ', p, '') then Exit;
+  if not PromptText('Image file path (blank to remove): ', p, '', True) then Exit;
   p := Trim(p);
   libd := IncludeTrailingPathDelimiter(FLib.Dir);
   oldImg := FLib.ImageBasename(FDetailIdx);
@@ -1026,10 +1026,11 @@ begin
   FDirty := True;
 end;
 
-{ A one-line text input on the status row. Enter confirms (empty = cancel),
+{ A one-line text input on the status row. Enter confirms (an empty entry
+  counts as a cancel unless AllowEmpty, for prompts where blank is an answer),
   Backspace edits, Esc cancels (when it arrives). Returns whether confirmed. }
 function TBrowser.PromptText(const Prompt: string; out Value: string;
-  const Initial: string): Boolean;
+  const Initial: string; AllowEmpty: Boolean): Boolean;
 var
   K: TKeyEvent;
   kind: Byte;
@@ -1048,7 +1049,7 @@ begin
     if (kind = kbFnKey) or (kind = kbPhys) then Continue;   { ignore arrows/F-keys }
     ch := GetKeyEventChar(K);
     case ch of
-      #13: begin done := True; Result := Trim(Value) <> ''; end;
+      #13: begin done := True; Result := AllowEmpty or (Trim(Value) <> ''); end;
       #27: done := True;                                    { Esc: cancel }
       #8:  if Value <> '' then Delete(Value, Length(Value), 1);
       #32..#126: Value := Value + ch;
