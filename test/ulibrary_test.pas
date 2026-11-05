@@ -184,6 +184,29 @@ begin
     cfg.Free;
   end;
 
+  { hand-typed recipes carry no source/source-id: each add must be a fresh
+    entry with its own file, even when two share a title (the editor's "new
+    recipe" relies on this) }
+  ForceDirectories(dir);
+  Lib := TLibrary.Create(dir);
+  try
+    Lib.Load;
+    R := MakeRecipe('Hand Typed Pie', '', '');
+    slug1 := Lib.AddOrUpdate(R, wasUpdate);
+    Check(not wasUpdate, 'recipe with no source-id is added, not an update');
+    R := MakeRecipe('Hand Typed Pie', '', '');
+    slug2 := Lib.AddOrUpdate(R, wasUpdate);
+    Check(not wasUpdate, 'a second recipe with no source-id is also a new add');
+    Check(slug1 <> slug2, 'same title, no source-id: distinct slugs');
+    Check(slug2 = 'hand-typed-pie-2', 'second one gets the -2 suffix');
+    Check(FileExists(IncludeTrailingPathDelimiter(dir) + slug1 + '.txt')
+          and FileExists(IncludeTrailingPathDelimiter(dir) + slug2 + '.txt'),
+          'both recipe files exist');
+    Check(Lib.Count >= 2, 'both entries are in the library');
+  finally
+    Lib.Free;
+  end;
+
   WipeDir(dir);
 
   WriteLn(Format('%d checks, %d failures', [Checks, Failures]));

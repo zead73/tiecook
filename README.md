@@ -96,6 +96,9 @@ click also dismisses the title screen.
 - Enter (or click the selected recipe) opens it.
 - F4 edits the highlighted recipe, F8 deletes it (with a confirmation).
 - F5 imports Meal-Master `.mmf` files: type a file or folder path when prompted.
+- F7 adds a new recipe: type a title, then fill in the editor (below). Nothing is
+  saved until you press F2, so cancelling leaves no file. A recipe typed by hand
+  has no `source` or `imported` lines.
 - F10 quits.
 
 **Recipe view**

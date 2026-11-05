@@ -64,6 +64,7 @@ type
     FForce: Boolean;       { next repaint must resend the whole screen }
     FEdit: TRecipe;        { working copy in the structured editor }
     FEditIdx: Integer;     { library index being edited }
+    FEditNew: Boolean;     { the editor holds a recipe not yet in the library }
     FEditRow: Integer;     { current row in FEditRows }
     FEditTop: Integer;     { first visible editor row }
     FEditRows: array of TEditRow;
@@ -91,6 +92,7 @@ type
     procedure RunEditorFile(const FileName: string);
     procedure EditProseText(var S: string);
     procedure EnterEdit(LibIdx: Integer);
+    procedure NewRecipe;
     procedure BuildEditRows;
     function EditRows: Integer;
     procedure EditMove(Delta: Integer);
@@ -346,6 +348,7 @@ begin
   StatusSeg(sx, ' Enter open ', 'open');
   StatusSeg(sx, ' F4 edit ', 'edit');
   StatusSeg(sx, ' F5 import ', 'import');
+  StatusSeg(sx, ' F7 new ', 'new');
   StatusSeg(sx, ' F8 del ', 'del');
   StatusSeg(sx, ' type=search ', '');
   StatusSeg(sx, ' F10 quit', 'quit');
@@ -586,7 +589,31 @@ begin
   if (LibIdx < 0) or (LibIdx >= FLib.Count) then Exit;
   FEditReturn := FMode;
   FEditIdx := LibIdx;
+  FEditNew := False;
   FEdit := CopyRecipe(FLib.Recipe(LibIdx));
+  FEditImageSrc := '';
+  FEditImageClear := False;
+  FEditRow := 0;
+  FEditTop := 0;
+  BuildEditRows;
+  FMode := mEdit;
+  FForce := True;
+  FDirty := True;
+end;
+
+{ Start a brand-new recipe: ask for a title, then open the editor on an empty
+  recipe. Nothing is written until the editor saves, so cancelling leaves no
+  file behind. }
+procedure TBrowser.NewRecipe;
+var
+  v: string;
+begin
+  if not PromptText('New recipe title: ', v) then Exit;     { cancelled }
+  InitRecipe(FEdit);
+  FEdit.Title := Trim(v);
+  FEditReturn := mList;
+  FEditIdx := -1;
+  FEditNew := True;
   FEditImageSrc := '';
   FEditImageClear := False;
   FEditRow := 0;
@@ -628,7 +655,8 @@ var
 begin
   ClearAll(AttrNormal);
   FillRow(0, AttrTitle);
-  PutStr(1, 0, 'Edit:  ' + Disp(FEdit.Title), AttrTitle);
+  if FEditNew then PutStr(1, 0, 'New recipe:  ' + Disp(FEdit.Title), AttrTitle)
+  else PutStr(1, 0, 'Edit:  ' + Disp(FEdit.Title), AttrTitle);
 
   for i := 0 to EditRows - 1 do
   begin
@@ -690,7 +718,9 @@ end;
 
 procedure TBrowser.SaveEdit;
 var
-  libd, oldImg: string;
+  libd, oldImg, destName: string;
+  wasUpdate, wasNew: Boolean;
+  i: Integer;
 begin
   if Trim(FEdit.Title) = '' then
   begin
@@ -698,6 +728,28 @@ begin
     Exit;
   end;
   libd := IncludeTrailingPathDelimiter(FLib.Dir);
+  wasNew := FEditNew;
+
+  { A new recipe has no file or library entry yet. Add it now (no source-id,
+    so it is always a fresh entry with its own unique filename), then carry on
+    through the normal save below. The photo is named after that filename, so
+    it is copied in here once the name is known. }
+  if FEditNew then
+  begin
+    FEdit.Image := '';
+    FLib.AddOrUpdate(FEdit, wasUpdate);
+    FEditIdx := FLib.Count - 1;
+    FEditNew := False;
+    if FEditImageSrc <> '' then
+    begin
+      destName := ChangeFileExt(ExtractFileName(FLib.FilePath(FEditIdx)),
+                                LowerCase(ExtractFileExt(FEditImageSrc)));
+      if CopyFileTo(FEditImageSrc, libd + destName) then FEdit.Image := destName
+      else Flash('Could not copy image - saved the recipe without it');
+    end;
+    FEditImageSrc := '';
+    FEditImageClear := False;
+  end;
   oldImg := FLib.ImageBasename(FEditIdx);   { current photo, before we overwrite }
 
   { apply a pending photo change to disk (editor works on a copy, so this is
@@ -722,7 +774,16 @@ begin
 
   SaveRecipe(FEdit, FLib.FilePath(FEditIdx));
   FLib.ReloadAt(FEditIdx);          { canonical, reflowed copy back into the lib }
-  Refilter(False);
+  if wasNew then
+  begin
+    FQuery := '';                   { show everything so the new recipe is visible }
+    Refilter(True);
+    for i := 0 to High(FFiltered) do
+      if FFiltered[i] = FEditIdx then begin FSel := i; Break; end;
+    MoveSel(0);                     { scroll the selection into view }
+  end
+  else
+    Refilter(False);
   FMode := FEditReturn;
   if FMode = mDetail then
   begin
@@ -850,7 +911,10 @@ begin
   if not FileExists(p) then begin Flash('No such file: ' + p); Exit; end;
   ext := ExtractFileExt(p);
   if not ImgExtOk(ext) then begin Flash('Image must be .jpg, .jpeg, .png or .webp'); Exit; end;
-  destName := ChangeFileExt(ExtractFileName(FLib.FilePath(FEditIdx)), LowerCase(ext));
+  if FEditNew then
+    destName := Slugify(FEdit.Title) + LowerCase(ext)   { shown only; the real name is set on save }
+  else
+    destName := ChangeFileExt(ExtractFileName(FLib.FilePath(FEditIdx)), LowerCase(ext));
   FEditImageSrc := p;
   FEditImageClear := False;
   FEdit.Image := destName;     { tentative; copied in on save }
@@ -1083,6 +1147,7 @@ begin
         kbdEnd:   MoveSel(Length(FFiltered));
         kbdF4:    if Length(FFiltered) > 0 then EnterEdit(FFiltered[FSel]);
         kbdF5:    ImportMMInteractive;
+        kbdF7:    NewRecipe;
         kbdF8:    if Length(FFiltered) > 0 then DeleteIndex(FFiltered[FSel]);
       end
     else
@@ -1160,6 +1225,7 @@ begin
     else DeleteIndex(FDetailIdx);
   end
   else if Tag = 'import' then ImportMMInteractive
+  else if Tag = 'new' then NewRecipe
   else if Tag = 'source' then
   begin
     if FLib.Recipe(FDetailIdx).SourceUrl <> '' then
