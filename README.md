@@ -1,5 +1,7 @@
 # tiecook
 
+**Home page: <https://tiestudio.ca/tiecook/>**
+
 A small, self-contained recipe manager: **import** recipes into a local
 library of plain-text files, **browse** them in a terminal, and **export** a
 static website you can put online — no HTML or database knowledge needed.
