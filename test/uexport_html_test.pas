@@ -182,6 +182,18 @@ begin
           'drop-in photo referenced on its recipe page');
     Check(Pos('<img', ReadFile(IncludeTrailingPathDelimiter(outdir) + 'ghost-pie.htm')) = 0,
           'missing image produces no <img> tag');
+
+    Check(Pos('name="robots"', html) = 0, 'no robots meta by default (index)');
+    Check(Pos('name="robots"', page) = 0, 'no robots meta by default (recipe page)');
+    Cfg.NoIndex := True;
+    ExportHtml(Lib, Cfg, outdir);
+    Check(Pos('<meta name="robots" content="noindex, noarchive">',
+              ReadFile(IncludeTrailingPathDelimiter(outdir) + 'index.html')) > 0,
+          'noindex adds the robots meta to the index');
+    Check(Pos('<meta name="robots" content="noindex, noarchive">',
+              ReadFile(IncludeTrailingPathDelimiter(outdir) + 'apple-onion-tart.htm')) > 0,
+          'noindex adds the robots meta to recipe pages');
+    Cfg.NoIndex := False;
   finally
     Lib.Free;
   end;

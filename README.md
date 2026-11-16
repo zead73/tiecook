@@ -170,6 +170,9 @@ background_image=
 personal_keyword=
 ; recipes with this keyword are highlighted
 favorite_keyword=Favorite
+; true = add <meta name="robots" content="noindex, noarchive"> to every page,
+; asking search engines not to index or archive the site
+noindex=false
 
 [editor]
 ; editor for the browser's edit command (blank = $VISUAL / $EDITOR / default)

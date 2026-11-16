@@ -57,6 +57,12 @@ begin
   Result := StringReplace(Result, #10, '<br>', [rfReplaceAll]);
 end;
 
+{ Asks search engines and archivers to skip the page (config [site] noindex). }
+function RobotsMeta: string;
+begin
+  Result := '<meta name="robots" content="noindex, noarchive">';
+end;
+
 { A small "made by" credit shown on every page, linking to the project repo.
   Wrapped in <footer> so the print CSS hides it, like the site footer. }
 function MadeByFooter: string;
@@ -230,6 +236,7 @@ begin
     sb.Add('<html lang="en"><head>');
     sb.Add('<meta charset="utf-8">');
     sb.Add('<meta name="viewport" content="width=device-width, initial-scale=1">');
+    if Cfg.NoIndex then sb.Add(RobotsMeta);
     sb.Add('<title>' + EscapeHtml(R.Title) + ' - ' + EscapeHtml(Cfg.SiteTitle) + '</title>');
     sb.Add('<link rel="stylesheet" href="style.css">');
     sb.Add('</head><body>');
@@ -342,6 +349,7 @@ begin
     sb.Add('<html lang="en"><head>');
     sb.Add('<meta charset="utf-8">');
     sb.Add('<meta name="viewport" content="width=device-width, initial-scale=1">');
+    if Cfg.NoIndex then sb.Add(RobotsMeta);
     sb.Add('<title>' + EscapeHtml(Cfg.SiteTitle) + '</title>');
     sb.Add('<link rel="stylesheet" href="style.css">');
     sb.Add('</head><body>');

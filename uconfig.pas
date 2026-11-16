@@ -17,6 +17,7 @@ unit uconfig;
     background_image=
     personal_keyword=
     favorite_keyword=Favorite
+    noindex=false         (true = tell search engines and archivers not to index the pages)
 
   [tandoor] is used by the Tandoor importer (later); [site] by HTML export.
   personal_keyword marks the personal section (empty = none); favorite_keyword
@@ -45,6 +46,7 @@ type
     BackgroundImage: string;
     PersonalKeyword: string;
     FavoriteKeyword: string;
+    NoIndex: Boolean;      { add a robots noindex meta tag to exported pages }
     Editor: string;
     Splash: Boolean;       { show the title screen on launch }
     constructor Create(const APath: string = '');
@@ -137,6 +139,7 @@ begin
   BackgroundImage := '';
   PersonalKeyword := '';         { empty -> no personal section (generic default) }
   FavoriteKeyword := 'Favorite';
+  NoIndex := False;
   Editor := '';
   Splash := True;
 end;
@@ -170,6 +173,7 @@ begin
     BackgroundImage := Ini.ReadString('site', 'background_image', BackgroundImage);
     PersonalKeyword := Ini.ReadString('site', 'personal_keyword', PersonalKeyword);
     FavoriteKeyword := Ini.ReadString('site', 'favorite_keyword', FavoriteKeyword);
+    NoIndex := StrToBoolDef(Ini.ReadString('site', 'noindex', BoolToStr(NoIndex, True)), NoIndex);
     Editor := Ini.ReadString('editor', 'command', Editor);
     { read as a string so true/false/yes/no/1/0 all work (TIniFile.ReadBool
       only accepts 1/0) }
@@ -222,6 +226,7 @@ begin
     Ini.WriteString('site', 'background_image', BackgroundImage);
     Ini.WriteString('site', 'personal_keyword', PersonalKeyword);
     Ini.WriteString('site', 'favorite_keyword', FavoriteKeyword);
+    Ini.WriteString('site', 'noindex', BoolToStr(NoIndex, True));
     Ini.WriteString('editor', 'command', Editor);
     Ini.WriteString('ui', 'splash', BoolToStr(Splash, True));   { "True"/"False" }
     Ini.UpdateFile;
