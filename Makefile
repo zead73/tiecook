@@ -43,7 +43,7 @@ $(WINBIN): *.pas
 # Windows installer: tiecook-setup.exe (needs makensis). Builds the Windows
 # exe + DLLs first, then packages them with config.example.
 installer: win config.example installer.nsi
-	makensis installer.nsi
+	makensis -DVERSION=$$(sed -n "s/.*TiecookVersion = '\(.*\)';/\1/p" uversion.pas) installer.nsi
 
 # Linux AppImage: tiecook-x86_64.AppImage — a single portable executable for
 # people who don't want to build from source. appimagetool is fetched to

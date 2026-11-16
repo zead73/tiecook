@@ -13,7 +13,7 @@ program tiecook;
 
 uses
   SysUtils, Classes, urecipe, uconfig, ulibrary, uimp_mealmaster, uexport_html,
-  uapi, uimp_tandoor, uui;
+  uapi, uimp_tandoor, uui, uversion;
 
 procedure Usage;
 begin
@@ -23,6 +23,7 @@ begin
   WriteLn('  tiecook import mealmaster [--library DIR] <file|dir>...');
   WriteLn('  tiecook import tandoor [--library DIR] [--url URL] [--token TOKEN] [--limit N]');
   WriteLn('  tiecook export html [--library DIR] <output-dir>');
+  WriteLn('  tiecook --version');
 end;
 
 { Load the config, creating a default file the first time so the user has
@@ -347,6 +348,8 @@ begin
     begin
       DoBrowse(Args);                       { no arguments: browse }
     end
+    else if cmd = '--version' then
+      WriteLn('tiecook ', TiecookVersion)
     else if (Copy(cmd, 1, 2) = '--') then
     begin
       { options with no command, e.g. `tiecook --library DIR`: browse }

@@ -39,4 +39,15 @@ else
     fail=1
 fi
 
+# CLI-level check: --version prints the program name and the number in uversion.pas.
+echo "== cli: --version"
+want="tiecook $(sed -n "s/.*TiecookVersion = '\(.*\)';/\1/p" "$root/uversion.pas")"
+got="$("$build/tiecook" --version)"
+if [ "$got" = "$want" ]; then
+    echo "   version OK ($got)"
+else
+    echo "FAIL: --version printed '$got', expected '$want'"
+    fail=1
+fi
+
 exit $fail
