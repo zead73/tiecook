@@ -8,7 +8,7 @@ unit uversion;
 interface
 
 const
-  TiecookVersion = '1.0.7';
+  TiecookVersion = '1.0.8';
 
 implementation
 

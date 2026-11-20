@@ -97,7 +97,14 @@ click also dismisses the title screen.
 - Up/Down/PgUp/PgDn/Home/End to move; the mouse selects and the wheel scrolls.
 - Enter (or click the selected recipe) opens it.
 - F4 edits the highlighted recipe, F8 deletes it (with a confirmation).
-- F5 imports Meal-Master `.mmf` files: type a file or folder path when prompted.
+- F5 imports Meal-Master files through a built-in file picker. It lists folders
+  and `.mmf`/`.txt` files with size and date. Arrow keys or the mouse move
+  around; Enter opens a folder; Backspace goes up; Space marks files (or `a`
+  marks them all); F5 or `i` imports the marked files, the highlighted file, or
+  the recipes in the highlighted folder. F2 jumps to places (home, your drives,
+  the folder you used last), Tab also shows other file types, `h` shows hidden
+  files, and `g` (or typing `/` or `~`) lets you type a path. Esc cancels. The
+  picker opens in the folder you imported from last time.
 - F7 adds a new recipe: type a title, then fill in the editor (below). Nothing is
   saved until you press F2, so cancelling leaves no file. A recipe typed by hand
   has no `source` or `imported` lines.
@@ -108,13 +115,15 @@ click also dismisses the title screen.
 - Up/Down/PgUp/PgDn/Home/End (or the wheel) scroll.
 - `e` edits the recipe, `d` deletes it (with a confirmation).
 - `o` opens the recipe's source URL, `i` opens its photo, in your default app.
-- `p` sets or replaces the recipe's photo — type/paste an image path
-  (`.jpg/.jpeg/.png/.webp`, `~` is expanded); a blank entry removes it.
+- `p` sets or replaces the recipe's photo using the same file picker as the
+  import (it lists only `.jpg/.jpeg/.png/.webp`; Enter chooses, `g` types a
+  path, and `r` removes the current photo). It opens in the folder you used
+  last time.
 - `q`, Esc, or Left goes back to the list; F10 (or Ctrl-Q) quits.
 
 Edit opens a **structured editor**: a form of fields (title, keywords,
 servings, time, source, image) and lists (ingredients, steps). The Image
-field attaches a photo the same way (copied into the library on save). Move
+field attaches a photo the same way, through the picker (copied into the library on save). Move
 with Up/Down,
 `Enter` edits the current field or item, `a` adds an item after the current
 one, `d` deletes it, `[` and `]` move it up or down, **F2 saves**, **F10

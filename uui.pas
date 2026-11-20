@@ -18,7 +18,7 @@ implementation
 
 uses
   video, keyboard, mouse, SysUtils, Classes, Process,
-  urecipe, urender, uopen, uimp_mealmaster;
+  urecipe, urender, uopen, uimp_mealmaster, ufilepick;
 
 const
   { attribute = foreground or (background shl 4) }
@@ -112,6 +112,7 @@ type
     procedure DeleteEditItem;
     procedure ReplaceStepWithProse(Idx: Integer; const S: string);
     procedure InsertStepsAfter(Idx: Integer; const S: string);
+    function ChooseImage(HasPhoto: Boolean; out Path: string): Boolean;
     procedure SetEditImage;
     procedure SetDetailImage;
   public
@@ -894,11 +895,39 @@ end;
 { Editor "Image" row: prompt for a photo to attach (blank removes the current
   one). The file is only copied/removed on save, so a cancel is undoable. The
   destination name is the recipe's slug plus the source extension. }
+{ Pick a photo with the file picker. Returns False when cancelled; Path is ''
+  when the user chose to remove the photo (offered only if HasPhoto). The
+  folder is remembered in the config for next time. }
+function TBrowser.ChooseImage(HasPhoto: Boolean; out Path: string): Boolean;
+var
+  Files: TStringList;
+  endDir: string;
+  res: TPickResult;
+begin
+  Path := '';
+  Files := TStringList.Create;
+  try
+    res := PickFiles(pkImages, 'Choose a photo', FCfg.ImageDir, FHasMouse, False,
+                     HasPhoto, Files, endDir);
+    FForce := True;
+    FDirty := True;
+    if endDir <> '' then
+    begin
+      FCfg.ImageDir := endDir;
+      try FCfg.Save; except on E: Exception do ; end;
+    end;
+    Result := res <> prCancel;
+    if (res = prChosen) and (Files.Count > 0) then Path := Files[0];
+  finally
+    Files.Free;
+  end;
+end;
+
 procedure TBrowser.SetEditImage;
 var
   p, ext, destName: string;
 begin
-  if not PromptText('Image file path (blank to remove): ', p, '', True) then Exit;  { cancelled }
+  if not ChooseImage(FEdit.Image <> '', p) then Exit;      { cancelled }
   p := Trim(p);
   if p = '' then
   begin
@@ -928,7 +957,8 @@ var
   R: TRecipe;
   p, ext, libd, destName, oldImg: string;
 begin
-  if not PromptText('Image file path (blank to remove): ', p, '', True) then Exit;
+  oldImg := FLib.ImageBasename(FDetailIdx);
+  if not ChooseImage(oldImg <> '', p) then Exit;
   p := Trim(p);
   libd := IncludeTrailingPathDelimiter(FLib.Dir);
   oldImg := FLib.ImageBasename(FDetailIdx);
@@ -1070,26 +1100,26 @@ begin
   FDirty := True;
 end;
 
-{ Prompt for a Meal-Master file/folder, import it into the live library, and
-  refresh the list. }
+{ Open the file picker, import the chosen Meal-Master file(s) into the live
+  library, and refresh the list. The picker starts in the folder used last
+  time (kept in the config). }
 procedure TBrowser.ImportMMInteractive;
 var
-  path: string;
   Files: TStringList;
+  endDir: string;
   total, updated: Integer;
+  picked: Boolean;
 begin
-  if not PromptText('Import Meal-Master file or folder: ', path) then Exit;
-  path := Trim(path);
-  { expand a leading ~/ to the home directory }
-  if (Length(path) >= 2) and (path[1] = '~') and (path[2] = '/') then
-    path := IncludeTrailingPathDelimiter(GetUserDir) + Copy(path, 3, Length(path));
   Files := TStringList.Create;
   try
-    CollectMMFiles(path, Files);
-    if Files.Count = 0 then
+    picked := PickRecipeFiles(FCfg.ImportDir, FHasMouse, Files, endDir);
+    FForce := True;
+    FDirty := True;
+    if not picked then Exit;
+    if endDir <> '' then
     begin
-      Flash('No .mmf files found at: ' + path);
-      Exit;
+      FCfg.ImportDir := endDir;
+      try FCfg.Save; except on E: Exception do ; end;
     end;
     total := ImportMealMasterFiles(Files, FLib, updated);
     Refilter(False);

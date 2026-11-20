@@ -46,6 +46,8 @@ type
     BackgroundImage: string;
     PersonalKeyword: string;
     FavoriteKeyword: string;
+    ImportDir: string;     { last folder the import picker was in }
+    ImageDir: string;      { last folder the photo picker was in }
     NoIndex: Boolean;      { add a robots noindex meta tag to exported pages }
     Editor: string;
     Splash: Boolean;       { show the title screen on launch }
@@ -140,6 +142,8 @@ begin
   PersonalKeyword := '';         { empty -> no personal section (generic default) }
   FavoriteKeyword := 'Favorite';
   NoIndex := False;
+  ImportDir := '';
+  ImageDir := '';
   Editor := '';
   Splash := True;
 end;
@@ -174,6 +178,8 @@ begin
     PersonalKeyword := Ini.ReadString('site', 'personal_keyword', PersonalKeyword);
     FavoriteKeyword := Ini.ReadString('site', 'favorite_keyword', FavoriteKeyword);
     NoIndex := StrToBoolDef(Ini.ReadString('site', 'noindex', BoolToStr(NoIndex, True)), NoIndex);
+    ImportDir := Ini.ReadString('import', 'last_dir', ImportDir);
+    ImageDir := Ini.ReadString('import', 'last_image_dir', ImageDir);
     Editor := Ini.ReadString('editor', 'command', Editor);
     { read as a string so true/false/yes/no/1/0 all work (TIniFile.ReadBool
       only accepts 1/0) }
@@ -227,6 +233,8 @@ begin
     Ini.WriteString('site', 'personal_keyword', PersonalKeyword);
     Ini.WriteString('site', 'favorite_keyword', FavoriteKeyword);
     Ini.WriteString('site', 'noindex', BoolToStr(NoIndex, True));
+    Ini.WriteString('import', 'last_dir', ImportDir);
+    Ini.WriteString('import', 'last_image_dir', ImageDir);
     Ini.WriteString('editor', 'command', Editor);
     Ini.WriteString('ui', 'splash', BoolToStr(Splash, True));   { "True"/"False" }
     Ini.UpdateFile;

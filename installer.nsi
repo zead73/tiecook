@@ -1,6 +1,6 @@
 !define APPNAME "tiecook"
 !ifndef VERSION
-  !define VERSION "1.0.7"   ; fallback; the Makefile passes the number from uversion.pas
+  !define VERSION "1.0.8"   ; fallback; the Makefile passes the number from uversion.pas
 !endif
 
 Name "${APPNAME}"
